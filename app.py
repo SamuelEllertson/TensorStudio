@@ -24,6 +24,8 @@ from prompt_toolkit.formatted_text import HTML
 
 from prompt_toolkit.buffer import Buffer
 
+from sizeable import Sizeable
+
 class Layouts(Enum):
     HOME = 1
     CREATE = 2
@@ -79,7 +81,7 @@ class TensorStudio:
         savedModelsBox = \
         Box(
             HSplit([
-                Label(text="Saved Models: ", style="class:blackonwhite"),
+                Label(text="Saved Models: ", style="class:blue class:underlined"),
                 TextArea(text="fake.model", focusable=False, read_only=True)
             ]),
             padding=0
@@ -88,7 +90,7 @@ class TensorStudio:
         modelDefinitionsBox = \
         Box(
             HSplit([
-                Label(text="Model Definitions: ", style="class:blackonwhite"),
+                Label(text="Model Definitions: ", style="class:blue class:underlined"),
                 TextArea(text="fake.definition", focusable=False, read_only=True)
             ]),
             padding=0
@@ -116,26 +118,21 @@ class TensorStudio:
             quitButton
         ])
 
-        creditBar = Label(text="Created by Samuel Ellertson             ")
+        creditBar = Label(text="Created by Samuel Ellertson", style="class:blue")
 
-        leftSidebar = \
-        Frame(
-            HSplit([
-                buttons,
-                creditBar
-            ])
-        )   
+        leftSidebar = buttons
 
         body = \
         VSplit([
-            leftSidebar,
-            rightSidebar
+            Frame(Sizeable(leftSidebar)),
+            Sizeable(rightSidebar)
         ])
 
         root = \
         HSplit([
             statusBar,
-            body
+            body,
+            creditBar
         ])
 
         self.homeLayout = Layout(
@@ -237,7 +234,13 @@ class TensorStudio:
             'homeleftsidebar':  'bg:#888800 #000000',
             'homerightsidebar': 'bg:#00aa00 #000000',
             'statusbar': 'bg:#ffffff fg:#000000 bold',
-            'blackonwhite': 'bg:#ffffff fg:#000000'
+            'blackonwhite': 'bg:#ffffff fg:#000000',
+            'blue':'fg:#0000ff',
+            'button':'',
+            'button.focused':'noinherit blue bold',
+            'underlined':'underline',
+            'frame':'white',
+            'cursor':'blue',
         })
 
         return self.style
