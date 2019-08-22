@@ -6,7 +6,6 @@ from enum import Enum
 
 import logging
 from logging import info, debug
-logging.basicConfig(filename="debug.log", level=logging.INFO)
 
 from prompt_toolkit.application import Application
 
@@ -25,6 +24,8 @@ from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.buffer import Buffer
 
 from sizeable import Sizeable
+
+logging.basicConfig(filename="debug.log", level=logging.INFO)
 
 class Layouts(Enum):
     HOME = 1
@@ -52,7 +53,7 @@ class TensorStudio:
         #the Application object
         self.app = self.getApp()
 
-    # ------------- Handler Factory ----------------#    
+    # ------------- Handler Factorys ----------------#    
     def swapHandlerFactory(self, layoutType):
         def handler(event=None):
             self.swapLayout(layoutType)
@@ -118,7 +119,7 @@ class TensorStudio:
             quitButton
         ])
 
-        creditBar = Label(text="Created by Samuel Ellertson", style="class:blue")
+        creditBar = Label(text="Created by Samuel Ellertson - github.com/SamuelEllertson", style="class:blue")
 
         leftSidebar = buttons
 
@@ -154,6 +155,9 @@ class TensorStudio:
         #Exit on q and control + q
         kb.add("q", eager=True)(self.exit)
         kb.add("c-q", eager=True)(self.exit)
+
+        #C to load creation layout
+        kb.add("c")(self.swapHandlerFactory(Layouts.CREATE))
 
         #tab and down focus next button
         kb.add("tab")(focus_next)
