@@ -3,16 +3,17 @@
 Represents the fullscreen app
 """
 from enum import Enum
-
 import logging
 from logging import info, debug
+import os
+from glob import glob 
 
 from prompt_toolkit.application import Application
 
 from prompt_toolkit.key_binding import KeyBindings, DynamicKeyBindings
 from prompt_toolkit.key_binding.bindings.focus import (focus_next, focus_previous)
 
-from prompt_toolkit.layout import HSplit, Layout, VSplit, Window, BufferControl, WindowAlign
+from prompt_toolkit.layout import HSplit, Layout, VSplit, Window, BufferControl, WindowAlign, ConditionalContainer
 from prompt_toolkit.layout import Dimension as D
 from prompt_toolkit.widgets import Box, Button, Frame, Label, TextArea, HorizontalLine
 from prompt_toolkit.styles import Style
@@ -24,20 +25,29 @@ from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.buffer import Buffer
 
 from sizeable import Sizeable
+from TensorController import TensorController
+from ContentManager import ContentManager
 
-logging.basicConfig(filename="debug.log", level=logging.INFO)
+logging.basicConfig(filename="debug.log", level=logging.DEBUG)
 
 class Layouts(Enum):
     HOME = 1
     CREATE = 2
     LOAD = 3
     IMPORT = 4
+    EDIT = 5
 
 class TensorStudio:
 
     def __init__(self):
         #default location is Home
         self.location = Layouts.HOME
+
+        #A TensorController object to manage tensorflow operations
+        self.controller = TensorController()
+
+        #A ContentManager object to manage each layouts content
+        self.contentManager = ContentManager(self)
 
         #Layouts and layout specific keybindings
         self.homeLayout = self.getHomeLayout()
@@ -59,6 +69,8 @@ class TensorStudio:
             self.swapLayout(layoutType)
         return handler
 
+    # ------------- Model functions ----------------#  
+
     # ------------- Home Layout Stuff ----------------#
     def getHomeLayout(self): ###TODO
         #singleton
@@ -67,13 +79,10 @@ class TensorStudio:
         except:
             pass
 
-        #statusBar = Label(text=HTML("<style fg='black' bg='white'>Statusbar</style>"), style="class:statusbar")
-        buff = Buffer()
-        buff.text = "TensorStudio"
         statusBar = \
         Frame(
             Window(
-                BufferControl(buffer=buff, focusable=False), 
+                BufferControl(buffer=self.contentManager.getHomeStatusBarBuffer(), focusable=False), 
                 height=D(min=1, max=1, preferred=1),
                 align=WindowAlign.CENTER
             )
@@ -83,7 +92,10 @@ class TensorStudio:
         Box(
             HSplit([
                 Label(text="Saved Models: ", style="class:blue class:underlined"),
-                TextArea(text="fake.model", focusable=False, read_only=True)
+                #TextArea(text=self.controller.getSavedModelsList(outputFormat="string"), focusable=False, read_only=False  )
+                Window(
+                    BufferControl(buffer=self.contentManager.getHomeSavedModelsBuffer(), focusable=False)
+                )
             ]),
             padding=0
         )
@@ -92,7 +104,10 @@ class TensorStudio:
         Box(
             HSplit([
                 Label(text="Model Definitions: ", style="class:blue class:underlined"),
-                TextArea(text="fake.definition", focusable=False, read_only=True)
+                #TextArea(text=self.controller.getModelDefinitionsList(outputFormat="string"), focusable=False, read_only=True)
+                Window(
+                    BufferControl(buffer=self.contentManager.getHomeModelDefinitionsBuffer(), focusable=False)
+                )
             ]),
             padding=0
         )
@@ -109,14 +124,18 @@ class TensorStudio:
         createModelButton = Button("[C] Create Model                 ", handler=self.swapHandlerFactory(Layouts.CREATE))
         loadModelButton   = Button("[L] Load Saved Model             ", handler=self.swapHandlerFactory(Layouts.LOAD))
         importModelButton = Button("[I] Import Model From Definition ", handler=self.swapHandlerFactory(Layouts.IMPORT))
+        editModelButton   = Button("[E] Edit Model                   ", handler=self.swapHandlerFactory(Layouts.EDIT))
         quitButton        = Button("[Q] Quit                         ", handler=self.exit)
+
+        editModelButton = ConditionalContainer(editModelButton, filter=self.controller.getWorkingModelExistsHandler())
 
         buttons = \
         HSplit([
             createModelButton,
             loadModelButton,
             importModelButton,
-            quitButton
+            editModelButton,
+            quitButton,
         ])
 
         creditBar = Label(text="Created by Samuel Ellertson - github.com/SamuelEllertson", style="class:blue")
@@ -159,6 +178,9 @@ class TensorStudio:
         #C to load creation layout
         kb.add("c")(self.swapHandlerFactory(Layouts.CREATE))
 
+        #E to edit model only if a model is loaded
+        kb.add("e", filter=self.controller.getWorkingModelExistsHandler())(self.swapHandlerFactory(Layouts.EDIT))
+
         #tab and down focus next button
         kb.add("tab")(focus_next)
         kb.add("down")(focus_next)
@@ -167,8 +189,19 @@ class TensorStudio:
         kb.add("s-tab")(focus_previous)
         kb.add("up")(focus_previous)
 
+        ###REMOVE
+        kb.add("r")(self.contentManager.updateHomeContent)
+        kb.add("t")(self.test) ###REMOVE: TESTING PURPOSES ONLY
+
         self.homeKeyBindings = kb
         return self.homeKeyBindings
+
+
+    def test(self, event=None):###REMOVE LATER: TESTING PURPOSES ONLY
+        if self.controller.workingModel is None:
+            self.controller.workingModel = True
+        else:
+            self.controller.workingModel = None 
 
     # ------------- Creation Layout Stuff ----------------#
     def getCreationLayout(self):###TODO: remove placeholder
