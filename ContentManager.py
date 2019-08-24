@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import os, glob
 from logging import info, debug
 
-from Layouts import Layouts
 from prompt_toolkit.buffer import Buffer
+
+from LayoutManager import Layouts
 
 class ContentManager:
 

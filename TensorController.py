@@ -12,7 +12,7 @@ class TensorController:
         self.trainingModel = None
 
     # ------------- Handler Factories ----------------#
-    
+
     def fileLister(self, directory, outputFormat=str):
 
         def lister():
@@ -50,8 +50,3 @@ class TensorController:
     def getFilesList(self, directory):
         files = [os.path.basename(f) for f in glob.glob(f"./{directory}/*")]
         return files
-
-#testing purposes
-if __name__ == '__main__':
-    controller = TensorController()
-    print(controller.fileLister("saved_models")())
