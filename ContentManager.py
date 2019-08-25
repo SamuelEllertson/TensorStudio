@@ -19,7 +19,7 @@ class ContentManager:
             ("modelDefinitions", None, Layouts.HOME, self.studio.controller.fileLister("model_definitions", outputFormat=str)),
         ]
 
-        self.bufferStore = self.initializeBuffers()
+        #self.bufferStore = self.initializeContent()
 
     # ------------- Primary API ----------------#
 
@@ -68,7 +68,7 @@ class ContentManager:
 
 
     # ------------- Helpers ----------------#
-    def initializeBuffers(self):
+    def initializeContent(self):
 
         bufferStore = dict()
 
@@ -82,4 +82,4 @@ class ContentManager:
 
             bufferStore[name] = (buff, location, updateFunction)
 
-        return bufferStore
+        self.bufferStore = bufferStore

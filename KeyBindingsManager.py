@@ -23,7 +23,7 @@ class KeyBindingsManager:
             (Layouts.CREATE, self.creationKeybinds),
         ]
 
-        self.keyBindingsStore = self.initializeKeyBinds()
+        #self.keyBindingsStore = self.initializeKeyBinds()
 
     # ------------- Primary API ----------------#
 
@@ -46,10 +46,10 @@ class KeyBindingsManager:
         kb.add("c-q", eager=True)(self.studio.exit)
 
         #C to load creation layout
-        kb.add("c")(self.studio.swapHandlerFactory(Layouts.CREATE))
+        kb.add("c")(self.studio.layouts.swapper(Layouts.CREATE))
 
         #E to edit model only if a model is loaded
-        kb.add("e", filter=self.studio.controller.modelExistsHandler())(self.studio.swapHandlerFactory(Layouts.EDIT))
+        kb.add("e", filter=self.studio.controller.modelExistsFilter())(self.studio.layouts.swapper(Layouts.EDIT))
 
         #tab and down focus next button
         kb.add("tab")(focus_next)
@@ -72,7 +72,7 @@ class KeyBindingsManager:
         kb.add("c-q", eager=True)(self.studio.exit)
 
         #Escape returns to home
-        kb.add("escape")(self.studio.swapHandlerFactory(Layouts.HOME)) ###todo: saving logic
+        kb.add("escape")(self.studio.layouts.swapper(Layouts.HOME)) ###todo: saving logic
 
         return kb
 
@@ -94,4 +94,4 @@ class KeyBindingsManager:
         for location, factoryFunction in self.keyBindSpecs:
             keyBindingsStore[location] = factoryFunction()
 
-        return keyBindingsStore
+        self.keyBindingsStore = keyBindingsStore

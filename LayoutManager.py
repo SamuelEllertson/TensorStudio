@@ -32,7 +32,7 @@ class LayoutManager:
             ("create", Layouts.CREATE, self.creationLayoutFactory),
         ]
 
-        self.layoutStore = self.initializeLayouts()
+        #self.layoutStore = self.initializeLayouts()
 
     # ------------- Primary API ----------------#
 
@@ -73,13 +73,17 @@ class LayoutManager:
             'cursor':'blue',
         })
 
+    def swapper(self, layoutType):
+        def handler(event=None):
+            self.swapLayout(layoutType)
+        return handler
+
     # ------------- Layout Factories ----------------#
 
     def homeLayoutFactory(self):
         content = self.studio.content
 
-        statusBar = \
-        Frame(
+        statusBar = Frame(
             Window(
                 BufferControl(buffer=content.getBuffer("statusBar"), focusable=False), 
                 height=D(min=1, max=1, preferred=1),
@@ -87,8 +91,7 @@ class LayoutManager:
             )
         )
 
-        savedModelsBox = \
-        Box(
+        savedModelsBox = Box(
             HSplit([
                 Label(text="Saved Models: ", style="class:blue class:underlined"),
                 Window(
@@ -98,8 +101,7 @@ class LayoutManager:
             padding=0
         )
 
-        modelDefinitionsBox = \
-        Box(
+        modelDefinitionsBox = Box(
             HSplit([
                 Label(text="Model Definitions: ", style="class:blue class:underlined"),
                 Window(
@@ -109,8 +111,7 @@ class LayoutManager:
             padding=0
         )
 
-        rightSidebar = \
-        Frame(
+        rightSidebar = Frame(
             HSplit([
                 savedModelsBox,
                 HorizontalLine(),
@@ -118,16 +119,15 @@ class LayoutManager:
             ])
         )
 
-        createModelButton = Button("[C] Create Model                 ", handler=self.studio.swapHandlerFactory(Layouts.CREATE))
-        loadModelButton   = Button("[L] Load Saved Model             ", handler=self.studio.swapHandlerFactory(Layouts.LOAD))
-        importModelButton = Button("[I] Import Model From Definition ", handler=self.studio.swapHandlerFactory(Layouts.IMPORT))
-        editModelButton   = Button("[E] Edit Model                   ", handler=self.studio.swapHandlerFactory(Layouts.EDIT))
+        createModelButton = Button("[C] Create Model                 ", handler=self.studio.layouts.swapper(Layouts.CREATE))
+        loadModelButton   = Button("[L] Load Saved Model             ", handler=self.studio.layouts.swapper(Layouts.LOAD))
+        importModelButton = Button("[I] Import Model From Definition ", handler=self.studio.layouts.swapper(Layouts.IMPORT))
+        editModelButton   = Button("[E] Edit Model                   ", handler=self.studio.layouts.swapper(Layouts.EDIT))
         quitButton        = Button("[Q] Quit                         ", handler=self.studio.exit)
 
-        editModelButton = ConditionalContainer(editModelButton, filter=self.studio.controller.modelExistsHandler())
+        editModelButton = ConditionalContainer(editModelButton, filter=self.studio.controller.modelExistsFilter())
 
-        buttons = \
-        HSplit([
+        leftSidebar = HSplit([
             createModelButton,
             loadModelButton,
             importModelButton,
@@ -137,16 +137,12 @@ class LayoutManager:
 
         creditBar = Label(text="Created by Samuel Ellertson - github.com/SamuelEllertson", style="class:blue")
 
-        leftSidebar = buttons
-
-        body = \
-        VSplit([
+        body = VSplit([
             Frame(Sizeable(leftSidebar)),
             Sizeable(rightSidebar)
         ])
 
-        root = \
-        HSplit([
+        root = HSplit([
             statusBar,
             body,
             creditBar
@@ -156,7 +152,6 @@ class LayoutManager:
             container=root,
             focused_element=createModelButton
         )
-
 
     def creationLayoutFactory(self):
         content = self.studio.content
@@ -171,7 +166,6 @@ class LayoutManager:
 
         return Layout(container=root_container)
 
-
     # ------------- Helpers ----------------#
     def initializeLayouts(self):
         layoutStore = dict()
@@ -183,4 +177,14 @@ class LayoutManager:
             layoutStore[layoutName] = layout
             layoutStore[location] = layout
 
-        return layoutStore
+        self.layoutStore = layoutStore
+
+    def swapLayout(self, layoutNameOrLocation):
+        location = self.resolveLocation(layoutNameOrLocation)
+
+        #set the current location and change to the new layout
+        self.studio.location = location
+        self.studio.app.layout = self.getLayout(location)
+
+        #Then update the content on the new layout
+        self.studio.content.updateLocation(location)

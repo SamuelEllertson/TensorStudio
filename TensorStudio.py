@@ -26,19 +26,19 @@ class TensorStudio:
         self.layouts = LayoutManager(self)
         self.keyBindings = KeyBindingsManager(self)
 
-        #the prompt_toolkit Application object
-        self.app = self.initializeApp()
+        #initialize only after all managers have been instantiated due to cyclic dependencies between them
+        self.controller.initializeController()
+        self.content.initializeContent()
+        self.layouts.initializeLayouts()
+        self.keyBindings.initializeKeyBinds()
 
-    # ------------- Handler Factorys ----------------#    
-    def swapHandlerFactory(self, layoutType):
-        def handler(event=None):
-            self.swapLayout(layoutType)
-        return handler
+        #the prompt_toolkit Application object
+        self.app = self.initializeApp() 
 
     # ------------- Helpers ----------------#
 
     def initializeApp(self):
-        layout = self.layouts.getLayout("home")
+        layout = self.layouts.getLayout(self.location)
         style = self.layouts.getStyle()
         keyBindings = self.keyBindings.getGlobalKeyBinds()
 
@@ -48,16 +48,6 @@ class TensorStudio:
             style=style,
             full_screen=True
         )
-
-    def swapLayout(self, layoutNameOrLocation):
-        location = self.layouts.resolveLocation(layoutNameOrLocation)
-
-        #set the current location and change to the new layout
-        self.location = location
-        self.app.layout = self.layouts.getLayout(location)
-
-        #Then update the content on the new layout
-        self.content.updateLocation(location)
 
     def run(self):
         self.app.run()

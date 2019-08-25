@@ -37,7 +37,7 @@ class TensorController:
     #------------- Filters ----------------#
     #These are function factories because Conditions can't have arguments, but we still need the instance 'self' reference.
 
-    def modelExistsHandler(self):
+    def modelExistsFilter(self):
         @Condition
         def workingModelExists():
             if self.workingModel is not None:
@@ -50,3 +50,6 @@ class TensorController:
     def getFilesList(self, directory):
         files = [os.path.basename(f) for f in glob.glob(f"./{directory}/*")]
         return files
+
+    def initializeController(self):
+        pass
