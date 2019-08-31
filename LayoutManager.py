@@ -19,6 +19,7 @@ class Layouts(Enum):
     LOAD = 3
     IMPORT = 4
     EDIT = 5
+    DELETE = 6
 
 class LayoutManager:
 
@@ -30,6 +31,10 @@ class LayoutManager:
 
             ("home", Layouts.HOME, self.homeLayoutFactory),
             ("create", Layouts.CREATE, self.creationLayoutFactory),
+            ("load", Layouts.LOAD, self.loadingLayoutFactory),
+            ("import", Layouts.IMPORT, self.importingLayoutFactory),
+            ("edit", Layouts.EDIT, self.editingLayoutFactory),
+            ("DELETE", Layouts.DELETE, self.removingLayoutFactory),
         ]
 
         #self.layoutStore = self.initializeLayouts()
@@ -72,6 +77,16 @@ class LayoutManager:
             'frame':'white',
             'cursor':'blue',
         })
+
+    def swapLayout(self, layoutNameOrLocation):
+        location = self.resolveLocation(layoutNameOrLocation)
+
+        #set the current location and change to the new layout
+        self.studio.location = location
+        self.studio.app.layout = self.getLayout(location)
+
+        #Then update the content on the new layout
+        self.studio.content.updateLocation(location)
 
     def swapper(self, layoutType):
         def handler(event=None):
@@ -123,6 +138,7 @@ class LayoutManager:
         loadModelButton   = Button("[L] Load Saved Model             ", handler=self.studio.layouts.swapper(Layouts.LOAD))
         importModelButton = Button("[I] Import Model From Definition ", handler=self.studio.layouts.swapper(Layouts.IMPORT))
         editModelButton   = Button("[E] Edit Model                   ", handler=self.studio.layouts.swapper(Layouts.EDIT))
+        deleteModelButton = Button("[D] Delete Model                 ", handler=self.studio.layouts.swapper(Layouts.DELETE))
         quitButton        = Button("[Q] Quit                         ", handler=self.studio.exit)
 
         editModelButton = ConditionalContainer(editModelButton, filter=self.studio.controller.modelExistsFilter())
@@ -132,6 +148,7 @@ class LayoutManager:
             loadModelButton,
             importModelButton,
             editModelButton,
+            deleteModelButton,
             quitButton,
         ])
 
@@ -158,7 +175,59 @@ class LayoutManager:
 
         root_container = Box(
             Frame(TextArea(
-                text="Creation layout placeholder",
+                text="CREATION layout placeholder",
+                width=40,
+                height=10,
+            )),
+        )
+
+        return Layout(container=root_container)
+
+    def loadingLayoutFactory(self):#TODO
+        content = self.studio.content
+
+        root_container = Box(
+            Frame(TextArea(
+                text="LOADING layout placeholder",
+                width=40,
+                height=10,
+            )),
+        )
+
+        return Layout(container=root_container)
+
+    def importingLayoutFactory(self):#TODO
+        content = self.studio.content
+
+        root_container = Box(
+            Frame(TextArea(
+                text="IMPORTING layout placeholder",
+                width=40,
+                height=10,
+            )),
+        )
+
+        return Layout(container=root_container)
+
+    def editingLayoutFactory(self):#TODO
+        content = self.studio.content
+
+        root_container = Box(
+            Frame(TextArea(
+                text="EDITING layout placeholder",
+                width=40,
+                height=10,
+            )),
+        )
+
+        return Layout(container=root_container)
+
+    def removingLayoutFactory(self):#TODO
+        content = self.studio.content
+
+        root_container = Box(
+            Frame(TextArea(
+                text="DELETE layout placeholder",
                 width=40,
                 height=10,
             )),
@@ -178,13 +247,3 @@ class LayoutManager:
             layoutStore[location] = layout
 
         self.layoutStore = layoutStore
-
-    def swapLayout(self, layoutNameOrLocation):
-        location = self.resolveLocation(layoutNameOrLocation)
-
-        #set the current location and change to the new layout
-        self.studio.location = location
-        self.studio.app.layout = self.getLayout(location)
-
-        #Then update the content on the new layout
-        self.studio.content.updateLocation(location)

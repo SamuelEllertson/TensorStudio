@@ -21,6 +21,10 @@ class KeyBindingsManager:
             #The keybinds per layout
             (Layouts.HOME, self.homeKeybinds),
             (Layouts.CREATE, self.creationKeybinds),
+            (Layouts.LOAD, self.loadingKeybinds),
+            (Layouts.IMPORT, self.importingKeybinds),
+            (Layouts.EDIT, self.editingKeybinds),
+            (Layouts.DELETE, self.deleteKeybinds),
         ]
 
         #self.keyBindingsStore = self.initializeKeyBinds()
@@ -51,6 +55,11 @@ class KeyBindingsManager:
         #E to edit model only if a model is loaded
         kb.add("e", filter=self.studio.controller.modelExistsFilter())(self.studio.layouts.swapper(Layouts.EDIT))
 
+
+        kb.add("i")(self.studio.layouts.swapper(Layouts.IMPORT))
+        kb.add("l")(self.studio.layouts.swapper(Layouts.LOAD))
+        kb.add("d")(self.studio.layouts.swapper(Layouts.DELETE))
+
         #tab and down focus next button
         kb.add("tab")(focus_next)
         kb.add("down")(focus_next)
@@ -59,9 +68,9 @@ class KeyBindingsManager:
         kb.add("s-tab")(focus_previous)
         kb.add("up")(focus_previous)
 
-        ###REMOVE
-        kb.add("r")(self.studio.content.locationUpdater(Layouts.HOME))
-        kb.add("t")(self.test) ###REMOVE: TESTING PURPOSES ONLY
+        ###DELETE
+        #kb.add("r")(self.studio.content.locationUpdater(Layouts.HOME))
+        kb.add("t")(self.test) ###DELETE: TESTING PURPOSES ONLY
 
         return kb
 
@@ -76,9 +85,53 @@ class KeyBindingsManager:
 
         return kb
 
+    def loadingKeybinds(self):
+        kb = KeyBindings()
+
+        #Exit on control + q
+        kb.add("c-q", eager=True)(self.studio.exit)
+
+        #Escape returns to home
+        kb.add("escape")(self.studio.layouts.swapper(Layouts.HOME))
+
+        return kb
+
+    def importingKeybinds(self):
+        kb = KeyBindings()
+
+        #Exit on control + q
+        kb.add("c-q", eager=True)(self.studio.exit)
+
+        #Escape returns to home
+        kb.add("escape")(self.studio.layouts.swapper(Layouts.HOME))
+
+        return kb
+
+    def editingKeybinds(self):
+        kb = KeyBindings()
+
+        #Exit on control + q
+        kb.add("c-q", eager=True)(self.studio.exit)
+
+        #Escape returns to home
+        kb.add("escape")(self.studio.layouts.swapper(Layouts.HOME))
+
+        return kb
+
+    def deleteKeybinds(self):
+        kb = KeyBindings()
+
+        #Exit on control + q
+        kb.add("c-q", eager=True)(self.studio.exit)
+
+        #Escape returns to home
+        kb.add("escape")(self.studio.layouts.swapper(Layouts.HOME))
+
+        return kb
+
     # ------------- Helpers ----------------#
 
-    def test(self, event=None):###REMOVE LATER: TESTING PURPOSES ONLY
+    def test(self, event=None):###DELETE LATER: TESTING PURPOSES ONLY
         if self.studio.controller.workingModel is None:
             self.studio.controller.workingModel = True
         else:
