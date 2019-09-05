@@ -3,7 +3,6 @@
 from logging import info, debug
 from enum import Enum
 
-from prompt_toolkit.key_binding.bindings.focus import (focus_next, focus_previous)
 from prompt_toolkit.layout import HSplit, Layout, VSplit, Window, BufferControl, WindowAlign, ConditionalContainer
 from prompt_toolkit.layout import Dimension as D
 from prompt_toolkit.widgets import Box, Button, Frame, Label, TextArea, HorizontalLine
@@ -34,7 +33,7 @@ class LayoutManager:
             ("load", Layouts.LOAD, self.loadingLayoutFactory),
             ("import", Layouts.IMPORT, self.importingLayoutFactory),
             ("edit", Layouts.EDIT, self.editingLayoutFactory),
-            ("DELETE", Layouts.DELETE, self.removingLayoutFactory),
+            ("delete", Layouts.DELETE, self.removingLayoutFactory),
         ]
 
         #self.layoutStore = self.initializeLayouts()
@@ -54,11 +53,11 @@ class LayoutManager:
 
             #iterate over the layout specs for the name
             for name, location, _ in self.layoutSpecs:
-                if name == layoutName:
+                if name == layoutNameOrLocation:
                     return location
 
             #raise KeyError if the name doesnt exist
-            raise KeyError(f"layoutName '{layoutName}' does not exist")
+            raise KeyError(f"layoutNameOrLocation='{layoutNameOrLocation}' does not exist")
 
         #case: not an int or string -> TypeError
         raise TypeError(f"received {type(layoutNameOrLocation)} was expecting int or string")
@@ -171,7 +170,6 @@ class LayoutManager:
         )
 
     def creationLayoutFactory(self):
-        content = self.studio.content
 
         root_container = Box(
             Frame(TextArea(
@@ -184,7 +182,6 @@ class LayoutManager:
         return Layout(container=root_container)
 
     def loadingLayoutFactory(self):#TODO
-        content = self.studio.content
 
         root_container = Box(
             Frame(TextArea(
@@ -197,7 +194,6 @@ class LayoutManager:
         return Layout(container=root_container)
 
     def importingLayoutFactory(self):#TODO
-        content = self.studio.content
 
         root_container = Box(
             Frame(TextArea(
@@ -210,7 +206,6 @@ class LayoutManager:
         return Layout(container=root_container)
 
     def editingLayoutFactory(self):#TODO
-        content = self.studio.content
 
         root_container = Box(
             Frame(TextArea(
@@ -223,7 +218,6 @@ class LayoutManager:
         return Layout(container=root_container)
 
     def removingLayoutFactory(self):#TODO
-        content = self.studio.content
 
         root_container = Box(
             Frame(TextArea(

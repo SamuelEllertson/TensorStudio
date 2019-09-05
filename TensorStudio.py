@@ -4,7 +4,6 @@ Represents the fullscreen app
 """
 import logging
 from logging import info, debug
-from glob import glob 
 
 from prompt_toolkit.application import Application
 
